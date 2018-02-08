@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -35,15 +36,25 @@ public class ChatServer {
         try {
             // Create log file
             FileWriter serverLogs = new FileWriter("chat.log", true);
-            serverLogs.write("[" + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME) + "] " + "Server started.\n");
+            String openMessage = "[" + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME) + "] " + "Server started.\n";
+            String closeMessage = "[" + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME) + "] " + "Server shutdown.\n";
+            serverLogs.write(openMessage);
             
             // Create interrupt handler for closing the server with ^C
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 System.out.println("Interrupt detected, kicking users...");
+                for (ClientHandler client : clientList){
+                    try {
+                        client.kickClient();
+                    } catch (RemoteException ex) {
+                        System.out.println("Unable to send kick signal to remote host.");
+                    }
+                    clientList.remove(client);
+                }
+                
                 try {
-                    serverLogs.write("[" + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME) + "] " + "Server shutdown.\n");
+                    serverLogs.write(closeMessage);
                     serverLogs.close();
-                    // TODO
                 } catch (IOException ex) {
                     System.out.println("Error closing log file.");
                 }

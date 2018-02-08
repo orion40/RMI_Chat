@@ -5,6 +5,7 @@
 */
 
 
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -18,12 +19,14 @@ public class ServerHandlerImpl implements ServerHandler {
     
     static private ArrayList<ClientHandler> clientList;
     static private ArrayList<String> messageList;
-    static private FileWriter logFile;
+    static private FileWriter logFileWriter;
+    static private FileReader logFileReader;
     
     public ServerHandlerImpl(ArrayList<ClientHandler> clients, ArrayList<String> messages, FileWriter file) {
         clientList = clients;
         messageList = messages;
-        logFile = file;
+        logFileWriter = file;
+        //logFileReader = new FileReader(file);
     }
     
     @Override
@@ -45,7 +48,7 @@ public class ServerHandlerImpl implements ServerHandler {
     @Override
     public boolean disconnect(ClientHandler client) throws RemoteException {
         String formatted_message = "[" + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME) + "] " + client.getUsername() + " has left.";
-        //System.out.println(formatted_message);
+        System.out.println(formatted_message);
         messageList.add(formatted_message);
         writeToLogs(formatted_message);
         clientList.remove(client);
@@ -81,10 +84,9 @@ public class ServerHandlerImpl implements ServerHandler {
     private void writeToLogs(String message){
         message += "\n";
         try {
-            logFile.write(message);
+            logFileWriter.write(message);
         } catch (IOException ex) {
-            System.out.println("Error writing to logfile !");
-            System.out.println(ex.getMessage());
+            Logger.getLogger(ServerHandlerImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
@@ -102,6 +104,11 @@ public class ServerHandlerImpl implements ServerHandler {
         
         return usernames;
     }
-    
-    
+
+    @Override
+    public ArrayList<String> getAllHistory() throws RemoteException {
+        
+        //logFileReader.
+        return null;
+    }
 }

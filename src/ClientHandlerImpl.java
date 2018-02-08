@@ -10,6 +10,7 @@ import java.rmi.RemoteException;
 
 public class ClientHandlerImpl implements ClientHandler {
     private String clientName;
+    private Boolean kicked = false;
     
     public ClientHandlerImpl(String name){
         clientName = name;
@@ -23,6 +24,16 @@ public class ClientHandlerImpl implements ClientHandler {
     @Override
     public String getUsername() throws RemoteException {
         return clientName;
+    }
+
+    @Override
+    public void kickClient() throws RemoteException {
+        kicked = true;
+        System.out.println("You have been kicked by the server.");
+    }
+    
+    public Boolean isKicked(){
+        return kicked;
     }
     
 }

@@ -21,13 +21,32 @@ import java.util.logging.Logger;
 public class ChatClient {
     private static ServerHandler serverHandler;
     private static ClientHandler client_stub;
-    private static boolean run = true;
+    private static final String versionString = "0.1";
+    private static Boolean run = true;
+    
+    /**
+     * This class handle CTRL+C events, to properly disconnect the client.
+     */
+    static private class ExceptionHandlerThread extends Thread{
+        @Override
+        public void run(){
+            System.out.println("Interrupt detected, disconnecting...");
+            try {
+                serverHandler.disconnect(client_stub);
+            } catch (RemoteException ex) {
+                System.out.println("Error trying to reach server.");
+                System.exit(1);
+            }
+        }
+    }
+    
     public static void main(String [] args) {
         if (args.length < 2){
             System.out.println("Usage: java ChatClient <server ip> <username>");
             System.exit(0);
         }
         String host = args[0];
+        ExceptionHandlerThread exceptionHandlerThread = new ExceptionHandlerThread();
         
         try {
             ClientHandlerImpl client = new ClientHandlerImpl(args[1]);
@@ -46,18 +65,10 @@ public class ChatClient {
                 System.exit(1);
             }
             
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                System.out.println("Interrupt detected, disconnecting...");
-                try {
-                    serverHandler.disconnect(client_stub);
-                } catch (RemoteException ex) {
-                    System.out.println("Error trying to reach server.");
-                    System.exit(1);
-                }
-            }));
+            Runtime.getRuntime().addShutdownHook(exceptionHandlerThread);
             
             // Read-eval loop
-            while(run){
+            while(!client.isKicked() && run){
                 Scanner sc = new Scanner(System.in);
                 System.out.print(args[1] + ": ");
                 String input = sc.nextLine().trim();
@@ -67,8 +78,8 @@ public class ChatClient {
                 }
             }
             
+            Runtime.getRuntime().removeShutdownHook(exceptionHandlerThread);
             System.out.println("Exiting...");
-            serverHandler.disconnect(client_stub);
             System.exit(0);
             
         } catch (Exception e)  {
@@ -103,6 +114,9 @@ public class ChatClient {
             case "history":
                 getHistory();
                 break;
+            case "allhistory":
+                getAllHistory();
+                break;
             case "users":
                 getUsers();
                 break;
@@ -113,7 +127,14 @@ public class ChatClient {
     }
     
     private static void printHelp() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        System.out.println("RMI Chat V" + versionString);
+        System.out.println("Commands :");
+        System.out.println("/help\tPrint this message.");
+        System.out.println("/logout\tDisconnect the client and exit.");
+        System.out.println("/quit\tDisconnect the client and exit.");
+        System.out.println("/history\tGet the server session message history.");
+        System.out.println("/allhistory\tGet the server complete message history.");
+        System.out.println("/users\tGet current user list.");
     }
     
     private static void logout() {
@@ -151,6 +172,20 @@ public class ChatClient {
             System.out.println("");
         } catch (RemoteException ex) {
             System.out.println("Unable to get user list.");
+        }
+    }
+
+    private static void getAllHistory() {
+        ArrayList<String> history;
+        try {
+            history = serverHandler.getAllHistory();
+            
+            for (String line : history){
+                System.out.println(line);
+            }
+            System.out.println("");
+        } catch (RemoteException ex) {
+            System.out.println("Unable to get history.");
         }
     }
 }
