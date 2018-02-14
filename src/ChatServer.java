@@ -5,6 +5,7 @@
 */
 
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -35,10 +36,10 @@ public class ChatServer {
         
         try {
             // Create log file
-            FileWriter serverLogs = new FileWriter("chat.log", true);
+            File serverLogs = new File("chat.log");
+            FileWriter serverLogsWriter = new FileWriter(serverLogs, true);
             String openMessage = "[" + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME) + "] " + "Server started.\n";
-            String closeMessage = "[" + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME) + "] " + "Server shutdown.\n";
-            serverLogs.write(openMessage);
+            serverLogsWriter.write(openMessage);
             
             // Create interrupt handler for closing the server with ^C
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -53,8 +54,8 @@ public class ChatServer {
                 }
                 
                 try {
-                    serverLogs.write(closeMessage);
-                    serverLogs.close();
+                    serverLogsWriter.write("[" + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME) + "] " + "Server shutdown.\n");
+                    serverLogsWriter.close();
                 } catch (IOException ex) {
                     System.out.println("Error closing log file.");
                 }

@@ -1,7 +1,6 @@
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -143,8 +142,9 @@ public class GUIChatClient extends Application{
     @Override
     public void start(Stage primaryStage){
         mainStage = primaryStage;
-        Scene scene = new Scene(createGUIChatClient());
-        //Scene scene = new Scene(createGUILoginClient());
+        //Scene scene = new Scene(createGUIChatClient());
+        // TODO add label for login infos (failure, etc)
+        Scene scene = new Scene(createGUILoginClient());
         
         primaryStage.setScene(scene);
         primaryStage.setTitle("RMI Chat Client");

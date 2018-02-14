@@ -1,0 +1,9 @@
+Code + README avec les reponses aux questions
+
+
+
+3.
+Dans le premier cas, nous envoyons simplement une chaine en paramètre, qui est sérialisable facilement. Cependant cette façon de faire ne passerai pas à l'échelle, si on envoyait par exemple un objet potentiellement plus volumineux. Dans le cas de l'envoie d'une string, sa taille n'est pas forcement très élevée; mais pour un objet autre, on n'en a aucune idée, et il faudrait le temps de recopier cet objet sur la machine réceptrice. Les rôles de client/serveur sont fixes.
+
+Dans le deuxième cas, le client joue également le rôle de serveur, car ce dernier fait appel à une méthode du client. Plutôt que de recopier tout l'objet, le serveur appellera simplement la méthode du client, qui affichera ici une string. 
+

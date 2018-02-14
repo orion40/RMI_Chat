@@ -5,6 +5,9 @@
 */
 
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -12,6 +15,7 @@ import java.rmi.RemoteException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,11 +26,19 @@ public class ServerHandlerImpl implements ServerHandler {
     static private FileWriter logFileWriter;
     static private FileReader logFileReader;
     
-    public ServerHandlerImpl(ArrayList<ClientHandler> clients, ArrayList<String> messages, FileWriter file) {
+    public ServerHandlerImpl(ArrayList<ClientHandler> clients, ArrayList<String> messages, File file) {
         clientList = clients;
         messageList = messages;
-        logFileWriter = file;
-        //logFileReader = new FileReader(file);
+        try {
+            logFileWriter = new FileWriter(file, true);
+        } catch (IOException ex) {
+            Logger.getLogger(ServerHandlerImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            logFileReader = new FileReader(file);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ServerHandlerImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     @Override
@@ -62,14 +74,14 @@ public class ServerHandlerImpl implements ServerHandler {
         writeToLogs(formatted_message);
         System.out.println(formatted_message);
         for (ClientHandler currentClient : clientList) {
-            if (!currentClient.equals(client))
-                currentClient.printMessage(formatted_message);
+            currentClient.printMessage(formatted_message);
         }
         return true;
     }
     
     private boolean usernameIsTaken(String username) {
-        for (ClientHandler currentClient : clientList){
+        for (Iterator<ClientHandler> i = clientList.iterator(); i.hasNext(); ){
+            ClientHandler currentClient = i.next();
             try {
                 if (currentClient.getUsername().equals(username))
                     return true;
@@ -104,11 +116,23 @@ public class ServerHandlerImpl implements ServerHandler {
         
         return usernames;
     }
-
+    
     @Override
     public ArrayList<String> getAllHistory() throws RemoteException {
+        ArrayList<String> fullHistory = new ArrayList<>();
+        fullHistory.ensureCapacity(50000);
+        try {
+            BufferedReader b = new BufferedReader(logFileReader);
+            String line;
+            while ((line = b.readLine()) != null){
+                fullHistory.add(line);
+                System.out.println("fullHistory size: " + fullHistory.size());
+            }
+            
+        } catch (IOException ex) {
+            Logger.getLogger(ServerHandlerImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
-        //logFileReader.
-        return null;
+        return fullHistory;
     }
 }

@@ -5,6 +5,7 @@
 */
 
 
+import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -81,7 +82,9 @@ public class ChatClient {
             Runtime.getRuntime().removeShutdownHook(exceptionHandlerThread);
             System.out.println("Exiting...");
             System.exit(0);
-            
+        } catch (ConnectException ex){
+            System.out.println("Connexion refused. Is the server up or the IP correct ?");
+            System.exit(1);
         } catch (Exception e)  {
             System.err.println("Error on client: " + e);
             System.exit(1);
@@ -121,7 +124,7 @@ public class ChatClient {
                 getUsers();
                 break;
             default:
-                System.out.println("Command unknwon.");
+                System.out.println("Command unknown.");
                 break;
         }
     }
@@ -172,6 +175,7 @@ public class ChatClient {
             System.out.println("");
         } catch (RemoteException ex) {
             System.out.println("Unable to get user list.");
+            System.out.println(ex.getMessage());
         }
     }
 
@@ -186,6 +190,7 @@ public class ChatClient {
             System.out.println("");
         } catch (RemoteException ex) {
             System.out.println("Unable to get history.");
+            System.out.println(ex.getMessage());
         }
     }
 }
